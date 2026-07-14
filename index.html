@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Финансовый Автопилот</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f23;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .card-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .big-number {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .expense-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .expense-input input {
+            flex: 1;
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .expense-input input::placeholder {
+            color: #555;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 24px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-full {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .category-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .category-tag {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-tag:hover, .category-tag.active {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .transaction-list {
+            margin-top: 16px;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-info h4 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .transaction-info span {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .transaction-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ff6b6b;
+        }
+
+        .chart-container {
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 20px 0;
+            gap: 8px;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 8px 8px 0 0;
+            min-height: 20px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #888;
+            white-space: nowrap;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: #fff;
+        }
+
+        .vampire-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .vampire-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vampire-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 107, 107, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .vampire-cost {
+            text-align: right;
+        }
+
+        .vampire-cost .month {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .vampire-cost .year {
+            font-size: 12px;
+            color: #ff6b6b;
+        }
+
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+        }
+
+        .progress-ring circle {
+            transition: stroke-dashoffset 0.5s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .goal-card {
+            text-align: center;
+        }
+
+        .goal-amount {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .goal-deadline {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #555;
+        }
+
+        .empty-state .emoji {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💰 Автопилот</h1>
+        <p>Твои деньги под контролем</p>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('home')">🏠 Главная</button>
+        <button class="nav-tab" onclick="showTab('stats')">📊 Статистика</button>
+        <button class="nav-tab" onclick="showTab('vampires')">🧛 Вампиры</button>
+        <button class="nav-tab" onclick="showTab('goals')">🎯 Цели</button>
+    </div>
+
+    <!-- ГЛАВНАЯ -->
+    <div id="home" class="tab-content active">
+        <div class="card">
+            <div class="card-title">Потрачено в этом месяце</div>
+            <div class="big-number" id="totalSpent">0 ₽</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Добавить трату</div>
+            <div class="expense-input">
+                <input type="number" id="amount" placeholder="Сумма" />
+                <input type="text" id="description" placeholder="Что купил?" style="flex: 2;" />
+            </div>
+            <div class="category-list">
+                <span class="category-tag" onclick="selectCategory(this, 'еда')">🍔 Еда</span>
+                <span class="category-tag" onclick="selectCategory(this, 'транспорт')">🚕 Транспорт</span>
+                <span class="category-tag" onclick="selectCategory(this, 'подписки')">📱 Подписки</span>
+                <span class="category-tag" onclick="selectCategory(this, 'развлечения')">🎮 Развлечения</span>
+                <span class="category-tag" onclick="selectCategory(this, 'покупки')">🛍 Покупки</span>
+                <span class="category-tag" onclick="selectCategory(this, 'жильё')">🏠 Жильё</span>
+            </div>
+            <button class="btn btn-full" onclick="addTransaction()" style="margin-top: 16px;">Добавить</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Последние траты</div>
+            <div class="transaction-list" id="transactionList">
+                <div class="empty-state">
+                    <div class="emoji">📝</div>
+                    <p>Пока нет трат. Добавь первую!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТАТИСТИКА -->
+    <div id="stats" class="tab-content">
+        <div class="card">
+            <div class="card-title">Распределение по категориям</div>
+            <div class="chart-container" id="chartContainer">
+                <div class="empty-state">
+                    <div class="emoji">📊</div>
+                    <p>Нет данных для графика</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Детализация</div>
+            <div id="statsDetail"></div>
+        </div>
+    </div>
+
+    <!-- ВАМПИРЫ -->
+    <div id="vampires" class="tab-content">
+        <div class="card">
+            <div class="card-title">Подписки-вампиры</div>
+            <div id="vampireList"></div>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #888;">Всего жрут в год:</span>
+                    <span class="big-number" style="font-size: 24px;">12 552 ₽</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЦЕЛИ -->
+    <div id="goals" class="tab-content">
+        <div class="card goal-card">
+            <div class="card-title">Текущая цель</div>
+            <svg class="progress-ring" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+                <circle id="progressCircle" cx="60" cy="60" r="54" fill="none" stroke="url(#gradient)" stroke-width="8" stroke-dasharray="339.292" stroke-dashoffset="339.292" stroke-linecap="round"/>
+                <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#667eea"/>
+                        <stop offset="100%" stop-color="#764ba2"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            <div class="goal-amount" id="goalAmount">0 / 80 000 ₽</div>
+            <div class="goal-deadline" id="goalDeadline">iPhone 15 — до 1 сентября</div>
+            <button class="btn btn-full" onclick="addToGoal()" style="margin-top: 16px;">+ Отложить 1000₽</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Нужно откладывать</div>
+            <div class="big-number" id="monthlyNeeded">50 000 ₽/мес</div>
+            <p style="color: #888; margin-top: 8px; font-size: 14px;">чтобы успеть к дедлайну</p>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Данные
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let selectedCategory = 'другое';
+        let goal = JSON.parse(localStorage.getItem('goal')) || { name: 'iPhone 15', target: 80000, saved: 0, deadline: '2026-09-01' };
+
+        const vampires = [
+            { name: 'Spotify', price: 199, icon: '🎵' },
+            { name: 'Yandex Plus', price: 299, icon: '🔴' },
+            { name: 'VK Музыка', price: 149, icon: '🎧' },
+            { name: 'Netflix', price: 399, icon: '🎬' }
+        ];
+
+        // Выбор категории
+        function selectCategory(el, cat) {
+            document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            selectedCategory = cat;
+        }
+
+        // Добавить трату
+        function addTransaction() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const desc = document.getElementById('description').value;
+
+            if (!amount || !desc) {
+                tg.showAlert('Введи сумму и описание!');
+                return;
+            }
+
+            transactions.push({
+                amount: amount,
+                description: desc,
+                category: selectedCategory,
+                date: new Date().toLocaleDateString('ru-RU')
+            });
+
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+
+            document.getElementById('amount').value = '';
+            document.getElementById('description').value = '';
+
+            updateUI();
+            tg.showAlert('✅ Трата добавлена!');
+        }
+
+        // Обновить интерфейс
+        function updateUI() {
+            // Общая сумма
+            const total = transactions.reduce((s, t) => s + t.amount, 0);
+            document.getElementById('totalSpent').textContent = total.toLocaleString('ru-RU') + ' ₽';
+
+            // Список транзакций
+            const list = document.getElementById('transactionList');
+            if (transactions.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="emoji">📝</div><p>Пока нет трат. Добавь первую!</p></div>';
+            } else {
+                list.innerHTML = transactions.slice(-5).reverse().map(t => `
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <h4>${t.description}</h4>
+                            <span>${t.category} • ${t.date}</span>
+                        </div>
+                        <div class="transaction-amount">-${t.amount.toLocaleString('ru-RU')} ₽</div>
+                    </div>
+                `).join('');
+            }
+
+            // График
+            updateChart();
+
+            // Цель
+            updateGoal();
+        }
+
+        // Обновить график
+        function updateChart() {
+            const cats = {};
+            transactions.forEach(t => {
+                cats[t.category] = (cats[t.category] || 0) + t.amount;
+            });
+
+            const container = document.getElementById('chartContainer');
+            const detail = document.getElementById('statsDetail');
+
+            if (Object.keys(cats).length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="emoji">📊</div><p>Нет данных для графика</p></div>';
+                detail.innerHTML = '';
+                return;
+            }
+
+            const max = Math.max(...Object.values(cats));
+            const total = Object.values(cats).reduce((s, v) => s + v, 0);
+
+            container.innerHTML = Object.entries(cats).map(([cat, amount]) => {
+                const height = (amount / max) * 100;
+                return `
+                    <div class="bar" style="height: ${height}%">
+                        <div class="bar-value">${amount.toLocaleString('ru-RU')}</div>
+                        <div class="bar-label">${cat}</div>
+                    </div>
+                `;
+            }).join('');
+
+            detail.innerHTML = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([cat, amount]) => {
+                const pct = (amount / total * 100).toFixed(1);
+                return `
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <h4>${cat}</h4>
+                        </div>
+                        <div class="transaction-amount">${amount.toLocaleString('ru-RU')} ₽ (${pct}%)</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Вампиры
+        function renderVampires() {
+            const list = document.getElementById('vampireList');
+            list.innerHTML = vampires.map(v => `
+                <div class="vampire-item">
+                    <div class="vampire-name">
+                        <div class="vampire-icon">${v.icon}</div>
+                        <div>
+                            <div style="font-weight: 600;">${v.name}</div>
+                            <div style="font-size: 12px; color: #888;">${v.price} ₽/мес</div>
+                        </div>
+                    </div>
+                    <div class="vampire-cost">
+                        <div class="month">${v.price} ₽</div>
+                        <div class="year">${v.price * 12} ₽/год</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Цель
+        function updateGoal() {
+            const pct = Math.min((goal.saved / goal.target) * 100, 100);
+            const offset = 339.292 - (339.292 * pct / 100);
+            document.getElementById('progressCircle').style.strokeDashoffset = offset;
+            document.getElementById('goalAmount').textContent = `${goal.saved.toLocaleString('ru-RU')} / ${goal.target.toLocaleString('ru-RU')} ₽`;
+
+            const deadline = new Date(goal.deadline);
+            const days = Math.max(Math.ceil((deadline - new Date()) / (1000 * 60 * 60 * 24)), 1);
+            const perMonth = Math.ceil((goal.target - goal.saved) / (days / 30));
+            document.getElementById('monthlyNeeded').textContent = perMonth.toLocaleString('ru-RU') + ' ₽/мес';
+        }
+
+        function addToGoal() {
+            goal.saved += 1000;
+            localStorage.setItem('goal', JSON.stringify(goal));
+            updateGoal();
+            tg.showAlert('💰 +1000₽ к цели!');
+        }
+
+        // Табы
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Инициализация
+        updateUI();
+        renderVampires();
+    </script>
+</body>
+</html>
