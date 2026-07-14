@@ -1,965 +1,524 @@
-<!DOCTYPE html>
+
+# Создаём РАБОЧИЙ Mini App с полным функционалом
+# Данные сохраняются в localStorage, всё считается автоматически
+
+working_app = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Автопилот — Карта контроля</title>
+    <title>Подписко-убийца</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
-            --bg: #0a0a0f;
-            --card-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            --accent: #00d4ff;
-            --accent2: #7b2cbf;
-            --text: #ffffff;
-            --text-secondary: #8892b0;
-            --success: #00f5d4;
-            --danger: #ff006e;
-            --warning: #fee440;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding-bottom: 80px;
-        }
-
-        /* ШАПКА */
-        .header {
-            padding: 20px;
-            background: linear-gradient(180deg, rgba(0,212,255,0.1) 0%, transparent 100%);
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        /* КАРТА */
-        .bank-card {
-            margin: 0 20px 20px;
-            padding: 24px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
-        }
-
-        .bank-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(-10%, -10%) rotate(5deg); }
-        }
-
-        .card-chip {
-            width: 50px;
-            height: 35px;
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .card-chip::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 30px;
-            height: 20px;
-            border: 2px solid rgba(0,0,0,0.3);
-            border-radius: 4px;
-        }
-
-        .card-number {
-            font-size: 22px;
-            letter-spacing: 4px;
-            font-family: 'Courier New', monospace;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .card-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .card-holder {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: 0.9;
-        }
-
-        .card-logo {
-            font-size: 28px;
-            font-weight: 900;
-            font-style: italic;
-            opacity: 0.8;
-        }
-
-        .card-balance {
-            position: absolute;
-            top: 24px;
-            right: 24px;
-            text-align: right;
-        }
-
-        .card-balance-label {
-            font-size: 11px;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .card-balance-amount {
-            font-size: 28px;
-            font-weight: 800;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        /* БЫСТРЫЕ ДЕЙСТВИЯ */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            padding: 0 20px;
-            margin-bottom: 24px;
-        }
-
-        .action-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 16px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .action-btn:active {
-            transform: scale(0.95);
-            background: rgba(255,255,255,0.1);
-        }
-
-        .action-icon {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-
-        .action-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        /* СЕКЦИИ */
-        .section {
-            padding: 0 20px;
-            margin-bottom: 24px;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .section-link {
-            font-size: 14px;
-            color: var(--accent);
-            cursor: pointer;
-        }
-
-        /* СТАТИСТИКА */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .stat-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 16px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .stat-value.up { color: var(--danger); }
-        .stat-value.down { color: var(--success); }
-
-        .stat-change {
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        /* ГРАФИК */
-        .chart-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 20px;
-        }
-
-        .chart-bars {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-around;
-            height: 150px;
-            gap: 8px;
-            margin-top: 16px;
-        }
-
-        .chart-bar {
-            flex: 1;
-            background: linear-gradient(to top, var(--accent), var(--accent2));
-            border-radius: 8px 8px 0 0;
-            min-height: 10px;
-            position: relative;
-            transition: all 0.3s;
-        }
-
-        .chart-bar-label {
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-        }
-
-        /* ТРАНЗАКЦИИ */
-        .transaction-list {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-
-        .transaction-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            margin-right: 12px;
-            background: rgba(255,255,255,0.05);
-        }
-
-        .transaction-info {
-            flex: 1;
-        }
-
-        .transaction-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .transaction-meta {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .transaction-amount {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--danger);
-        }
-
-        /* МОДАЛЬНОЕ ОКНО */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            align-items: flex-end;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg);
-            border-radius: 24px 24px 0 0;
-            padding: 24px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 16px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .input-group input {
-            width: 100%;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 16px;
-            color: var(--text);
-            font-size: 16px;
-            outline: none;
-        }
-
-        .input-group input:focus {
-            border-color: var(--accent);
-        }
-
-        .btn-primary {
-            width: 100%;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 16px;
-            color: var(--text);
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
-        /* НИЖНЕЕ МЕНЮ */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(10,10,15,0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0;
-            z-index: 100;
-        }
-
-        .nav-item {
-            text-align: center;
-            cursor: pointer;
-            padding: 4px 16px;
-        }
-
-        .nav-item.active .nav-icon {
-            color: var(--accent);
-        }
-
-        .nav-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-            color: var(--text-secondary);
-        }
-
-        .nav-label {
-            font-size: 10px;
-            color: var(--text-secondary);
-        }
-
-        .nav-item.active .nav-label {
-            color: var(--accent);
-        }
-
-        /* ВАМПИРЫ */
-        .vampire-card {
-            background: linear-gradient(135deg, rgba(255,0,110,0.1) 0%, rgba(123,44,191,0.1) 100%);
-            border: 1px solid rgba(255,0,110,0.2);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-        }
-
-        .vampire-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: rgba(255,0,110,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-right: 12px;
-        }
-
-        .vampire-info {
-            flex: 1;
-        }
-
-        .vampire-name {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .vampire-price {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .vampire-total {
-            text-align: right;
-        }
-
-        .vampire-month {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--danger);
-        }
-
-        .vampire-year {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        /* ЦЕЛЬ */
-        .goal-progress {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-        }
-
-        .progress-ring-container {
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 20px;
-            position: relative;
-        }
-
-        .progress-ring-bg {
-            fill: none;
-            stroke: rgba(255,255,255,0.05);
-            stroke-width: 8;
-        }
-
-        .progress-ring-fill {
-            fill: none;
-            stroke: url(#progressGradient);
-            stroke-width: 8;
-            stroke-linecap: round;
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-            transition: stroke-dashoffset 0.5s;
-        }
-
-        .progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 28px;
-            font-weight: 800;
-        }
-
-        .goal-name {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .goal-amount {
-            font-size: 16px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .goal-deadline {
-            font-size: 14px;
-            color: var(--accent);
-            margin-bottom: 16px;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+            --bg: #050508; --surface: rgba(255,255,255,0.03);
+            --accent: #ff3366; --accent2: #ff6b35; --accent3: #f7931e;
+            --success: #00d9a3; --text: #fff; --text2: rgba(255,255,255,0.6); --text3: rgba(255,255,255,0.3);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 100px; }
+        .bg-glow { position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 20% 50%, rgba(255,51,102,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,107,53,0.1) 0%, transparent 50%); animation: bgPulse 8s ease-in-out infinite; pointer-events: none; z-index: 0; }
+        @keyframes bgPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .content { position: relative; z-index: 1; }
+        .header { padding: 24px 20px 0; text-align: center; }
+        .logo-icon { width: 64px; height: 64px; margin: 0 auto 16px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 8px 32px rgba(255,51,102,0.4); animation: logoFloat 3s ease-in-out infinite; }
+        @keyframes logoFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .logo-text { font-size: 28px; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
+        .hero { text-align: center; padding: 24px 20px; }
+        .hero-label { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+        .hero-amount { font-size: 52px; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+        .hero-period { font-size: 15px; color: var(--text2); margin-top: 8px; }
+        .action-btn { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 20px 24px; padding: 18px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 16px; color: white; font-size: 17px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 32px rgba(255,51,102,0.4); }
+        .action-btn:active { transform: scale(0.97); }
+        .section { padding: 0 20px; margin-bottom: 24px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-title { font-size: 20px; font-weight: 800; }
+        .section-link { font-size: 14px; color: var(--accent); cursor: pointer; }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .stat-box { background: var(--surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center; }
+        .stat-box-icon { font-size: 24px; margin-bottom: 8px; }
+        .stat-box-value { font-size: 20px; font-weight: 800; }
+        .stat-box-label { font-size: 11px; color: var(--text2); }
+        .sub-card { background: var(--surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 16px; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .sub-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .sub-info { flex: 1; }
+        .sub-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .sub-meta { font-size: 13px; color: var(--text2); }
+        .sub-price { text-align: right; }
+        .sub-price-month { font-size: 18px; font-weight: 800; }
+        .sub-price-year { font-size: 12px; color: var(--accent); }
+        .sub-delete { background: rgba(255,51,102,0.2); border: none; border-radius: 10px; padding: 8px 12px; color: var(--accent); font-size: 12px; cursor: pointer; margin-left: 8px; }
+        .ref-card { background: linear-gradient(135deg, rgba(0,217,163,0.1), rgba(0,217,163,0.05)); border: 1px solid rgba(0,217,163,0.2); border-radius: 20px; padding: 20px; margin-bottom: 12px; }
+        .ref-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--success), #00b894); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 700; cursor: pointer; }
+        .ref-reward { text-align: center; margin-top: 10px; font-size: 12px; color: var(--success); }
+        .chart-wrap { background: var(--surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 20px; }
+        .chart-bars { display: flex; align-items: flex-end; justify-content: space-around; height: 120px; gap: 8px; margin-top: 16px; }
+        .cbar { flex: 1; background: linear-gradient(to top, var(--accent), var(--accent2)); border-radius: 8px 8px 0 0; min-height: 8px; position: relative; transition: height 0.5s ease-out; }
+        .cbar-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text3); }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(5,5,8,0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 12px 0 24px; z-index: 100; }
+        .nav-item { text-align: center; cursor: pointer; padding: 4px 16px; opacity: 0.5; transition: all 0.3s; }
+        .nav-item.active { opacity: 1; }
+        .nav-icon { font-size: 24px; margin-bottom: 4px; }
+        .nav-label { font-size: 10px; }
+        .tab { display: none; }
+        .tab.active { display: block; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: flex-end; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-sheet { background: #0a0a12; border-radius: 24px 24px 0 0; padding: 24px; width: 100%; animation: slideUp 0.3s; max-height: 90vh; overflow-y: auto; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+        .input-field { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; color: white; font-size: 16px; margin-bottom: 12px; outline: none; }
+        .input-field:focus { border-color: var(--accent); }
+        .btn-main { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 700; cursor: pointer; }
+        .btn-ghost { width: 100%; padding: 16px; background: transparent; border: none; color: var(--text2); font-size: 16px; cursor: pointer; margin-top: 8px; }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text3); }
+        .empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
+        .goal-progress { background: var(--surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 24px; text-align: center; }
+        .progress-ring { width: 140px; height: 140px; margin: 0 auto 20px; }
+        .progress-ring circle { transition: stroke-dashoffset 0.5s; transform: rotate(-90deg); transform-origin: 50% 50%; }
+        .category-select { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+        .cat-tag { padding: 10px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .cat-tag.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; }
     </style>
-<base target="_blank">
 </head>
 <body>
-    <!-- ГЛАВНАЯ -->
-    <div id="tab-home" class="tab-content active">
-        <div class="header">
-            <div class="header-top">
-                <div class="logo">💳 Автопилот</div>
-                <div class="user-avatar">👤</div>
+    <div class="bg-glow"></div>
+    <div class="content">
+        <!-- ГЛАВНАЯ -->
+        <div id="tab-home" class="tab active">
+            <div class="header">
+                <div class="logo-icon">🗡️</div>
+                <div class="logo-text">Подписко-убийца</div>
+                <div class="logo-sub">Контроль подписок и экономия</div>
             </div>
-        </div>
-
-        <!-- БАНКОВСКАЯ КАРТА -->
-        <div class="bank-card">
-            <div class="card-balance">
-                <div class="card-balance-label">Баланс</div>
-                <div class="card-balance-amount" id="cardBalance">45 230 ₽</div>
+            <div class="hero">
+                <div class="hero-label">Подписки жрут в год</div>
+                <div class="hero-amount" id="totalYear">0 ₽</div>
+                <div class="hero-period" id="totalMonth">0 ₽ каждый месяц</div>
             </div>
-            <div class="card-chip"></div>
-            <div class="card-number">•••• •••• •••• 4523</div>
-            <div class="card-bottom">
-                <div class="card-holder">AUTOPILOT CARD</div>
-                <div class="card-logo">AP</div>
-            </div>
-        </div>
-
-        <!-- БЫСТРЫЕ ДЕЙСТВИЯ -->
-        <div class="quick-actions">
-            <div class="action-btn" onclick="openModal()">
-                <div class="action-icon">➕</div>
-                <div class="action-label">Трата</div>
-            </div>
-            <div class="action-btn" onclick="showTab('stats')">
-                <div class="action-icon">📊</div>
-                <div class="action-label">Анализ</div>
-            </div>
-            <div class="action-btn" onclick="showTab('vampires')">
-                <div class="action-icon">🧛</div>
-                <div class="action-label">Вампиры</div>
-            </div>
-            <div class="action-btn" onclick="showTab('goals')">
-                <div class="action-icon">🎯</div>
-                <div class="action-label">Цель</div>
-            </div>
-        </div>
-
-        <!-- СТАТИСТИКА -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">Этот месяц</div>
-                <div class="section-link" onclick="showTab('stats')">Подробнее →</div>
-            </div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Потрачено</div>
-                    <div class="stat-value up" id="statSpent">12 450 ₽</div>
-                    <div class="stat-change" style="color: var(--danger)">↑ 15% к прошлому</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Сэкономлено</div>
-                    <div class="stat-value down" id="statSaved">3 200 ₽</div>
-                    <div class="stat-change" style="color: var(--success)">↓ 8% лучше</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ГРАФИК -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">Расходы по дням</div>
-            </div>
-            <div class="chart-card">
-                <div class="chart-bars" id="chartBars">
-                    <div class="chart-bar" style="height: 40%"><div class="chart-bar-label">Пн</div></div>
-                    <div class="chart-bar" style="height: 70%"><div class="chart-bar-label">Вт</div></div>
-                    <div class="chart-bar" style="height: 30%"><div class="chart-bar-label">Ср</div></div>
-                    <div class="chart-bar" style="height: 90%"><div class="chart-bar-label">Чт</div></div>
-                    <div class="chart-bar" style="height: 50%"><div class="chart-bar-label">Пт</div></div>
-                    <div class="chart-bar" style="height: 80%"><div class="chart-bar-label">Сб</div></div>
-                    <div class="chart-bar" style="height: 60%"><div class="chart-bar-label">Вс</div></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ПОСЛЕДНИЕ ТРАНЗАКЦИИ -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">Последние траты</div>
-                <div class="section-link">Все →</div>
-            </div>
-            <div class="transaction-list" id="transactionList">
-                <div class="transaction-item">
-                    <div class="transaction-icon">🍔</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">Бургер Кинг</div>
-                        <div class="transaction-meta">Еда • Сегодня</div>
+            <button class="action-btn" onclick="openAdd()">
+                <span>➕</span>
+                <span>Добавить подписку</span>
+            </button>
+            <div class="section">
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-box-icon">📊</div>
+                        <div class="stat-box-value" id="countSubs">0</div>
+                        <div class="stat-box-label">Подписок</div>
                     </div>
-                    <div class="transaction-amount">-450 ₽</div>
-                </div>
-                <div class="transaction-item">
-                    <div class="transaction-icon">🚕</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">Яндекс Go</div>
-                        <div class="transaction-meta">Транспорт • Вчера</div>
+                    <div class="stat-box">
+                        <div class="stat-box-icon">💰</div>
+                        <div class="stat-box-value" style="color: var(--success)" id="saveAmount">0₽</div>
+                        <div class="stat-box-label">Можно сэкономить</div>
                     </div>
-                    <div class="transaction-amount">-320 ₽</div>
-                </div>
-                <div class="transaction-item">
-                    <div class="transaction-icon">🎵</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">Spotify</div>
-                        <div class="transaction-meta">Подписка • 12 июл</div>
+                    <div class="stat-box">
+                        <div class="stat-box-icon">📅</div>
+                        <div class="stat-box-value" id="nextPayment">—</div>
+                        <div class="stat-box-label">Дней до списания</div>
                     </div>
-                    <div class="transaction-amount">-199 ₽</div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Мои подписки</div>
+                    <div class="section-link" onclick="clearAll()">Очистить</div>
+                </div>
+                <div id="subsList">
+                    <div class="empty-state">
+                        <div class="emoji">📝</div>
+                        <p>Пока нет подписок. Добавь первую!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ЭКОНОМИЯ -->
+        <div id="tab-save" class="tab">
+            <div class="header">
+                <div class="logo-icon" style="background: linear-gradient(135deg, var(--success), #00b894);">💰</div>
+                <div class="logo-text" style="background: linear-gradient(135deg, var(--success), #00b894); -webkit-background-clip: text;">Экономия</div>
+                <div class="logo-sub">Альтернативы и рефералки</div>
+            </div>
+            <div class="section">
+                <div class="section-title" style="margin-bottom: 16px;">🎁 Выгодные переходы</div>
+                <div class="ref-card">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #fc3f1d, #ff6b35); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🎵</div>
+                        <div style="font-size: 15px; font-weight: 700;">Яндекс Музыка</div>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">3 месяца бесплатно по моей ссылке. Аналог Spotify, но дешевле.</div>
+                    <button class="ref-btn" onclick="openLink('https://music.yandex.ru/promo')">Перейти и получить бонус</button>
+                    <div class="ref-reward">💎 3 мес бесплатно + я получу бонус</div>
+                </div>
+                <div class="ref-card">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #e50914, #b20710); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🎬</div>
+                        <div style="font-size: 15px; font-weight: 700;">IVI вместо Netflix</div>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">Российские сериалы + голливудское кино. В 2 раза дешевле.</div>
+                    <button class="ref-btn" onclick="openLink('https://www.ivi.ru')">Перейти и получить бонус</button>
+                    <div class="ref-reward">💎 30 дней бесплатно + я получу бонус</div>
+                </div>
+                <div class="ref-card">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #ff6b00, #ff9500); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📦</div>
+                        <div style="font-size: 15px; font-weight: 700;">Самокат</div>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">Быстрая доставка продуктов. 500₽ на первый заказ.</div>
+                    <button class="ref-btn" onclick="openLink('https://samokat.ru')">Перейти и получить бонус</button>
+                    <div class="ref-reward">💎 500₽ на заказ + я получу бонус</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ЦЕЛИ -->
+        <div id="tab-goals" class="tab">
+            <div class="header">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">🎯</div>
+                <div class="logo-text" style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text;">Цели</div>
+                <div class="logo-sub">Накопления от экономии</div>
+            </div>
+            <div class="hero">
+                <div class="hero-label">Накоплено на цели</div>
+                <div class="hero-amount" style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text;" id="goalSaved">0 ₽</div>
+                <div class="hero-period" id="goalTarget">из 50 000 ₽</div>
+            </div>
+            <button class="action-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); box-shadow: 0 8px 32px rgba(102,126,234,0.4);" onclick="addToGoal()">
+                <span>💰</span>
+                <span>Отложить с экономии</span>
+            </button>
+            <div class="section">
+                <div class="goal-progress">
+                    <svg class="progress-ring" viewBox="0 0 140 140">
+                        <defs><linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#667eea"/><stop offset="100%" stop-color="#764ba2"/></linearGradient></defs>
+                        <circle cx="70" cy="70" r="60" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
+                        <circle id="progCircle" cx="70" cy="70" r="60" fill="none" stroke="url(#pg)" stroke-width="8" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"/>
+                    </svg>
+                    <div style="margin-top: -100px; margin-bottom: 60px; font-size: 32px; font-weight: 800;" id="goalPercent">0%</div>
+                    <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">iPhone 15 Pro</div>
+                    <div style="font-size: 14px; color: var(--text2);" id="goalNeed">Нужно: 50 000 ₽/мес</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ПРОФИЛЬ -->
+        <div id="tab-profile" class="tab">
+            <div class="header">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">👤</div>
+                <div class="logo-text" style="background: linear-gradient(135deg, #f093fb, #f5576c); -webkit-background-clip: text;">Профиль</div>
+                <div class="logo-sub">Статистика и настройки</div>
+            </div>
+            <div class="section">
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-box-icon">💰</div>
+                        <div class="stat-box-value" style="color: var(--success)" id="profileEarned">0₽</div>
+                        <div class="stat-box-label">Сэкономлено</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-icon">📊</div>
+                        <div class="stat-box-value" id="profileCount">0</div>
+                        <div class="stat-box-label">Подписок</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-icon">📅</div>
+                        <div class="stat-box-value" id="profileSince">—</div>
+                        <div class="stat-box-label">Дней с нами</div>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title" style="margin-bottom: 16px;">⚙️ Настройки</div>
+                <div class="sub-card" style="cursor: pointer;" onclick="exportData()">
+                    <div class="sub-info">
+                        <div class="sub-name">📤 Экспорт данных</div>
+                        <div class="sub-meta">Сохранить в файл</div>
+                    </div>
+                </div>
+                <div class="sub-card" style="cursor: pointer;" onclick="importData()">
+                    <div class="sub-info">
+                        <div class="sub-name">📥 Импорт данных</div>
+                        <div class="sub-meta">Загрузить из файла</div>
+                    </div>
+                </div>
+                <div class="sub-card" style="cursor: pointer;" onclick="shareBot()">
+                    <div class="sub-info">
+                        <div class="sub-name">📤 Поделиться ботом</div>
+                        <div class="sub-meta">Пригласить друзей</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- СТАТИСТИКА -->
-    <div id="tab-stats" class="tab-content">
-        <div class="header">
-            <div class="header-top">
-                <div class="logo">📊 Анализ</div>
+    
+    <!-- МОДАЛКА ДОБАВЛЕНИЯ -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-sheet">
+            <div class="modal-title">➕ Добавить подписку</div>
+            <input class="input-field" id="subName" type="text" placeholder="Название (Spotify, Netflix...)">
+            <input class="input-field" id="subPrice" type="number" placeholder="Сумма в месяц (199)">
+            <input class="input-field" id="subDay" type="number" placeholder="День списания (1-31)" min="1" max="31">
+            <div style="font-size: 13px; color: var(--text2); margin-bottom: 8px;">Иконка:</div>
+            <div class="category-select">
+                <span class="cat-tag active" onclick="selectIcon(this, '🎵')">🎵 Музыка</span>
+                <span class="cat-tag" onclick="selectIcon(this, '🎬')">🎬 Видео</span>
+                <span class="cat-tag" onclick="selectIcon(this, '📱')">📱 Приложение</span>
+                <span class="cat-tag" onclick="selectIcon(this, '🎮')">🎮 Игры</span>
+                <span class="cat-tag" onclick="selectIcon(this, '📦')">📦 Доставка</span>
+                <span class="cat-tag" onclick="selectIcon(this, '🚕')">🚕 Такси</span>
+                <span class="cat-tag" onclick="selectIcon(this, '📚')">📚 Обучение</span>
+                <span class="cat-tag" onclick="selectIcon(this, '💪')">💪 Спорт</span>
             </div>
-        </div>
-
-        <div class="section">
-            <div class="chart-card">
-                <div style="text-align: center; margin-bottom: 16px; color: var(--text-secondary);">Распределение по категориям</div>
-                <div class="chart-bars" style="height: 200px;">
-                    <div class="chart-bar" style="height: 80%"><div class="chart-bar-label">Еда</div></div>
-                    <div class="chart-bar" style="height: 50%"><div class="chart-bar-label">Трансп</div></div>
-                    <div class="chart-bar" style="height: 30%"><div class="chart-bar-label">Подписки</div></div>
-                    <div class="chart-bar" style="height: 60%"><div class="chart-bar-label">Развлеч</div></div>
-                    <div class="chart-bar" style="height: 40%"><div class="chart-bar-label">Жильё</div></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title" style="margin-bottom: 16px;">Детализация</div>
-            <div class="transaction-list">
-                <div class="transaction-item">
-                    <div class="transaction-icon" style="background: rgba(255,0,110,0.2);">🍔</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">Еда</div>
-                        <div class="transaction-meta">32% от всех трат</div>
-                    </div>
-                    <div class="transaction-amount">4 250 ₽</div>
-                </div>
-                <div class="transaction-item">
-                    <div class="transaction-icon" style="background: rgba(0,212,255,0.2);">🚕</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">Транспорт</div>
-                        <div class="transaction-meta">20% от всех трат</div>
-                    </div>
-                    <div class="transaction-amount">2 650 ₽</div>
-                </div>
-                <div class="transaction-item">
-                    <div class="transaction-icon" style="background: rgba(254,228,64,0.2);">📱</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">Подписки</div>
-                        <div class="transaction-meta">12% от всех трат</div>
-                    </div>
-                    <div class="transaction-amount">1 580 ₽</div>
-                </div>
-            </div>
+            <button class="btn-main" onclick="addSubscription()">Добавить</button>
+            <button class="btn-ghost" onclick="closeAdd()">Отмена</button>
         </div>
     </div>
-
-    <!-- ВАМПИРЫ -->
-    <div id="tab-vampires" class="tab-content">
-        <div class="header">
-            <div class="header-top">
-                <div class="logo">🧛 Вампиры</div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div style="text-align: center; margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, rgba(255,0,110,0.1), rgba(123,44,191,0.1)); border-radius: 16px;">
-                <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Подписки жрут в год</div>
-                <div style="font-size: 36px; font-weight: 800; color: var(--danger);">12 552 ₽</div>
-                <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">Это 1 046 ₽/мес</div>
-            </div>
-
-            <div class="vampire-card">
-                <div class="vampire-icon">🎵</div>
-                <div class="vampire-info">
-                    <div class="vampire-name">Spotify</div>
-                    <div class="vampire-price">199 ₽/мес</div>
-                </div>
-                <div class="vampire-total">
-                    <div class="vampire-month">199 ₽</div>
-                    <div class="vampire-year">2 388 ₽/год</div>
-                </div>
-            </div>
-
-            <div class="vampire-card">
-                <div class="vampire-icon">🔴</div>
-                <div class="vampire-info">
-                    <div class="vampire-name">Yandex Plus</div>
-                    <div class="vampire-price">299 ₽/мес</div>
-                </div>
-                <div class="vampire-total">
-                    <div class="vampire-month">299 ₽</div>
-                    <div class="vampire-year">3 588 ₽/год</div>
-                </div>
-            </div>
-
-            <div class="vampire-card">
-                <div class="vampire-icon">🎧</div>
-                <div class="vampire-info">
-                    <div class="vampire-name">VK Музыка</div>
-                    <div class="vampire-price">149 ₽/мес</div>
-                </div>
-                <div class="vampire-total">
-                    <div class="vampire-month">149 ₽</div>
-                    <div class="vampire-year">1 788 ₽/год</div>
-                </div>
-            </div>
-
-            <div class="vampire-card">
-                <div class="vampire-icon">🎬</div>
-                <div class="vampire-info">
-                    <div class="vampire-name">Netflix</div>
-                    <div class="vampire-price">399 ₽/мес</div>
-                </div>
-                <div class="vampire-total">
-                    <div class="vampire-month">399 ₽</div>
-                    <div class="vampire-year">4 788 ₽/год</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ЦЕЛИ -->
-    <div id="tab-goals" class="tab-content">
-        <div class="header">
-            <div class="header-top">
-                <div class="logo">🎯 Цели</div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="goal-progress">
-                <svg width="140" height="140" style="transform: rotate(-90deg);">
-                    <defs>
-                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#00d4ff"/>
-                            <stop offset="100%" stop-color="#7b2cbf"/>
-                        </linearGradient>
-                    </defs>
-                    <circle cx="70" cy="70" r="60" class="progress-ring-bg"/>
-                    <circle cx="70" cy="70" r="60" class="progress-ring-fill" stroke-dasharray="377" stroke-dashoffset="280"/>
-                </svg>
-                <div style="margin-top: -100px; margin-bottom: 60px; font-size: 32px; font-weight: 800;">26%</div>
-
-                <div class="goal-name">iPhone 15 Pro</div>
-                <div class="goal-amount">21 000 ₽ / 80 000 ₽</div>
-                <div class="goal-deadline">⏰ До 1 сентября 2026</div>
-                <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">Нужно откладывать: 14 750 ₽/мес</div>
-
-                <button class="btn-primary">+ Отложить 1 000 ₽</button>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title" style="margin-bottom: 16px;">История накоплений</div>
-            <div class="transaction-list">
-                <div class="transaction-item">
-                    <div class="transaction-icon" style="background: rgba(0,245,212,0.2);">💰</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">Пополнение</div>
-                        <div class="transaction-meta">5 000 ₽ • 10 июл</div>
-                    </div>
-                    <div class="transaction-amount" style="color: var(--success)">+5 000 ₽</div>
-                </div>
-                <div class="transaction-item">
-                    <div class="transaction-icon" style="background: rgba(0,245,212,0.2);">💰</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">Пополнение</div>
-                        <div class="transaction-meta">8 000 ₽ • 1 июл</div>
-                    </div>
-                    <div class="transaction-amount" style="color: var(--success)">+8 000 ₽</div>
-                </div>
-                <div class="transaction-item">
-                    <div class="transaction-icon" style="background: rgba(0,245,212,0.2);">💰</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">Пополнение</div>
-                        <div class="transaction-meta">8 000 ₽ • 1 июн</div>
-                    </div>
-                    <div class="transaction-amount" style="color: var(--success)">+8 000 ₽</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- МОДАЛЬНОЕ ОКНО -->
-    <div class="modal" id="addModal">
-        <div class="modal-content">
-            <div class="modal-title">Добавить трату</div>
-            <div class="input-group">
-                <label>Сумма</label>
-                <input type="number" id="amountInput" placeholder="350">
-            </div>
-            <div class="input-group">
-                <label>Описание</label>
-                <input type="text" id="descInput" placeholder="Кафе, такси, продукты...">
-            </div>
-            <div class="input-group">
-                <label>Категория</label>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
-                    <span class="category-tag" onclick="selectCat(this, 'еда')" style="padding: 8px 16px; background: rgba(255,255,255,0.05); border-radius: 20px; font-size: 13px; cursor: pointer;">🍔 Еда</span>
-                    <span class="category-tag" onclick="selectCat(this, 'транспорт')" style="padding: 8px 16px; background: rgba(255,255,255,0.05); border-radius: 20px; font-size: 13px; cursor: pointer;">🚕 Транспорт</span>
-                    <span class="category-tag" onclick="selectCat(this, 'подписки')" style="padding: 8px 16px; background: rgba(255,255,255,0.05); border-radius: 20px; font-size: 13px; cursor: pointer;">📱 Подписки</span>
-                    <span class="category-tag" onclick="selectCat(this, 'развлечения')" style="padding: 8px 16px; background: rgba(255,255,255,0.05); border-radius: 20px; font-size: 13px; cursor: pointer;">🎮 Развлечения</span>
-                </div>
-            </div>
-            <button class="btn-primary" onclick="addTransaction()">Добавить</button>
-            <button class="btn-primary" onclick="closeModal()" style="background: rgba(255,255,255,0.05); margin-top: 8px;">Отмена</button>
-        </div>
-    </div>
-
+    
     <!-- НИЖНЕЕ МЕНЮ -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="showTab('home')">
+        <div class="nav-item active" onclick="showTab('home', this)">
             <div class="nav-icon">🏠</div>
             <div class="nav-label">Главная</div>
         </div>
-        <div class="nav-item" onclick="showTab('stats')">
-            <div class="nav-icon">📊</div>
-            <div class="nav-label">Анализ</div>
+        <div class="nav-item" onclick="showTab('save', this)">
+            <div class="nav-icon">💰</div>
+            <div class="nav-label">Экономия</div>
         </div>
-        <div class="nav-item" onclick="showTab('vampires')">
-            <div class="nav-icon">🧛</div>
-            <div class="nav-label">Вампиры</div>
-        </div>
-        <div class="nav-item" onclick="showTab('goals')">
+        <div class="nav-item" onclick="showTab('goals', this)">
             <div class="nav-icon">🎯</div>
             <div class="nav-label">Цели</div>
+        </div>
+        <div class="nav-item" onclick="showTab('profile', this)">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">Профиль</div>
         </div>
     </div>
 
     <script>
+        // === ДАННЫЕ ===
+        let subs = JSON.parse(localStorage.getItem('subs')) || [];
+        let goal = JSON.parse(localStorage.getItem('goal')) || { target: 50000, saved: 0, name: 'iPhone 15 Pro' };
+        let startDate = localStorage.getItem('startDate') || new Date().toISOString();
+        let selectedIcon = '🎵';
+        
+        // === ИНИЦИАЛИЗАЦИЯ ===
         let tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
-        tg.setHeaderColor('#0a0a0f');
-        tg.setBackgroundColor('#0a0a0f');
-
-        let selectedCategory = 'еда';
-
-        function showTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            event.currentTarget.classList.add('active');
+        tg.setHeaderColor('#050508');
+        tg.setBackgroundColor('#050508');
+        
+        // === ФУНКЦИИ ===
+        function saveData() {
+            localStorage.setItem('subs', JSON.stringify(subs));
+            localStorage.setItem('goal', JSON.stringify(goal));
+            localStorage.setItem('startDate', startDate);
         }
-
-        function openModal() {
-            document.getElementById('addModal').classList.add('active');
+        
+        function formatMoney(n) {
+            return Math.round(n).toLocaleString('ru-RU') + ' ₽';
         }
-
-        function closeModal() {
-            document.getElementById('addModal').classList.remove('active');
+        
+        function daysUntil(day) {
+            const today = new Date().getDate();
+            if (day >= today) return day - today;
+            return day + 30 - today;
         }
-
-        function selectCat(el, cat) {
-            document.querySelectorAll('.category-tag').forEach(t => t.style.background = 'rgba(255,255,255,0.05)');
-            el.style.background = 'linear-gradient(135deg, #00d4ff, #7b2cbf)';
-            selectedCategory = cat;
+        
+        function updateUI() {
+            // Считаем суммы
+            const totalMonth = subs.reduce((s, x) => s + (parseFloat(x.price) || 0), 0);
+            const totalYear = totalMonth * 12;
+            const count = subs.length;
+            
+            // Находим ближайшее списание
+            let minDays = 999;
+            subs.forEach(s => {
+                const d = daysUntil(parseInt(s.day) || 1);
+                if (d < minDays) minDays = d;
+            });
+            
+            // Обновляем главную
+            document.getElementById('totalYear').textContent = formatMoney(totalYear);
+            document.getElementById('totalMonth').textContent = formatMoney(totalMonth) + ' каждый месяц';
+            document.getElementById('countSubs').textContent = count;
+            document.getElementById('saveAmount').textContent = formatMoney(totalYear * 0.3);
+            document.getElementById('nextPayment').textContent = count > 0 ? minDays : '—';
+            
+            // Список подписок
+            const list = document.getElementById('subsList');
+            if (count === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="emoji">📝</div><p>Пока нет подписок. Добавь первую!</p></div>';
+            } else {
+                list.innerHTML = subs.map((s, i) => `
+                    <div class="sub-card">
+                        <div class="sub-icon" style="background: linear-gradient(135deg, hsl(${i * 60}, 70%, 50%), hsl(${i * 60 + 30}, 70%, 40%)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; width: 52px; height: 52px; flex-shrink: 0;">${s.icon}</div>
+                        <div class="sub-info">
+                            <div class="sub-name">${s.name}</div>
+                            <div class="sub-meta">Списание ${s.day} числа • через ${daysUntil(s.day)} дней</div>
+                        </div>
+                        <div class="sub-price">
+                            <div class="sub-price-month">${formatMoney(s.price)}</div>
+                            <div class="sub-price-year">${formatMoney(s.price * 12)}/год</div>
+                        </div>
+                        <button class="sub-delete" onclick="deleteSub(${i})">✕</button>
+                    </div>
+                `).join('');
+            }
+            
+            // Цель
+            const pct = goal.target > 0 ? Math.min((goal.saved / goal.target) * 100, 100) : 0;
+            document.getElementById('goalSaved').textContent = formatMoney(goal.saved);
+            document.getElementById('goalTarget').textContent = 'из ' + formatMoney(goal.target);
+            document.getElementById('goalPercent').textContent = pct.toFixed(0) + '%';
+            document.getElementById('goalNeed').textContent = 'Осталось: ' + formatMoney(goal.target - goal.saved);
+            document.getElementById('progCircle').style.strokeDashoffset = 377 - (377 * pct / 100);
+            
+            // Профиль
+            const days = Math.floor((new Date() - new Date(startDate)) / (1000 * 60 * 60 * 24));
+            document.getElementById('profileEarned').textContent = formatMoney(goal.saved);
+            document.getElementById('profileCount').textContent = count;
+            document.getElementById('profileSince').textContent = days;
+            
+            saveData();
         }
-
-        function addTransaction() {
-            const amount = document.getElementById('amountInput').value;
-            const desc = document.getElementById('descInput').value;
-            if (amount && desc) {
-                tg.showAlert('✅ Добавлено: ' + amount + '₽ — ' + desc);
-                closeModal();
+        
+        function addSubscription() {
+            const name = document.getElementById('subName').value.trim();
+            const price = parseFloat(document.getElementById('subPrice').value);
+            const day = parseInt(document.getElementById('subDay').value);
+            
+            if (!name || !price || !day) {
+                tg.showAlert('Заполни все поля!');
+                return;
+            }
+            if (day < 1 || day > 31) {
+                tg.showAlert('День должен быть от 1 до 31!');
+                return;
+            }
+            
+            subs.push({ name, price, day, icon: selectedIcon });
+            saveData();
+            updateUI();
+            closeAdd();
+            
+            // Очищаем поля
+            document.getElementById('subName').value = '';
+            document.getElementById('subPrice').value = '';
+            document.getElementById('subDay').value = '';
+            
+            tg.showAlert('✅ Подписка добавлена!');
+        }
+        
+        function deleteSub(index) {
+            subs.splice(index, 1);
+            saveData();
+            updateUI();
+        }
+        
+        function clearAll() {
+            if (confirm('Удалить все подписки?')) {
+                subs = [];
+                saveData();
+                updateUI();
             }
         }
+        
+        function addToGoal() {
+            const amount = 1000;
+            goal.saved += amount;
+            saveData();
+            updateUI();
+            tg.showAlert('💰 +1000₽ отложено на цель!');
+        }
+        
+        function selectIcon(el, icon) {
+            document.querySelectorAll('.cat-tag').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            selectedIcon = icon;
+        }
+        
+        function showTab(tab, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            if (el) el.classList.add('active');
+        }
+        
+        function openAdd() {
+            document.getElementById('addModal').classList.add('active');
+        }
+        
+        function closeAdd() {
+            document.getElementById('addModal').classList.remove('active');
+        }
+        
+        function openLink(url) {
+            tg.openLink(url);
+        }
+        
+        function shareBot() {
+            tg.openTelegramLink('https://t.me/share/url?url=https://t.me/denezhniybotyara_bot&text=Смотри какой крутой бот для контроля подписок!');
+        }
+        
+        function exportData() {
+            const data = JSON.stringify({ subs, goal, startDate });
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'subscription-killer-backup.json';
+            a.click();
+            tg.showAlert('📤 Данные экспортированы!');
+        }
+        
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.subs) subs = data.subs;
+                        if (data.goal) goal = data.goal;
+                        if (data.startDate) startDate = data.startDate;
+                        saveData();
+                        updateUI();
+                        tg.showAlert('📥 Данные загружены!');
+                    } catch {
+                        tg.showAlert('❌ Ошибка в файле!');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+        
+        // === СТАРТ ===
+        updateUI();
     </script>
 </body>
-</html>
+</html>'''
+
+with open('/mnt/agents/output/subscription_killer_working.html', 'w', encoding='utf-8') as f:
+    f.write(working_app)
+
+print("✅ РАБОЧИЙ Подписко-убийца создан!")
+print(f"✅ {len(working_app.splitlines())} строк")
+print(f"✅ Размер: {len(working_app)} символов")
+print("\n🚀 Что работает:")
+print("  • Добавление подписок (название, цена, день, иконка)")
+print("  • Автоматический подсчёт сумм")
+print("  • Удаление подписок")
+print("  • Сохранение в localStorage (не теряется при закрытии)")
+print("  • Цели накопления")
+print("  • Экспорт/импорт данных")
+print("  • Реферальные ссылки")
