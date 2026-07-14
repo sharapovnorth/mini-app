@@ -1,8 +1,7 @@
 
-# Создаём РАБОЧИЙ Mini App с полным функционалом
-# Данные сохраняются в localStorage, всё считается автоматически
+# Создаём ИСПРАВЛЕННЫЙ Mini App — без Python-кода, с полным каталогом подписок РФ
 
-working_app = '''<!DOCTYPE html>
+fixed_app = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -57,7 +56,7 @@ working_app = '''<!DOCTYPE html>
         .chart-wrap { background: var(--surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 20px; }
         .chart-bars { display: flex; align-items: flex-end; justify-content: space-around; height: 120px; gap: 8px; margin-top: 16px; }
         .cbar { flex: 1; background: linear-gradient(to top, var(--accent), var(--accent2)); border-radius: 8px 8px 0 0; min-height: 8px; position: relative; transition: height 0.5s ease-out; }
-        .cbar-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text3); }
+        .cbar-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text3); white-space: nowrap; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(5,5,8,0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 12px 0 24px; z-index: 100; }
         .nav-item { text-align: center; cursor: pointer; padding: 4px 16px; opacity: 0.5; transition: all 0.3s; }
         .nav-item.active { opacity: 1; }
@@ -82,6 +81,13 @@ working_app = '''<!DOCTYPE html>
         .category-select { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
         .cat-tag { padding: 10px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
         .cat-tag.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; }
+        .preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0; }
+        .preset-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .preset-item:active { transform: scale(0.97); background: rgba(255,255,255,0.08); }
+        .preset-icon { font-size: 32px; margin-bottom: 8px; }
+        .preset-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .preset-price { font-size: 12px; color: var(--text2); }
+        .preset-desc { font-size: 11px; color: var(--text3); margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -147,28 +153,37 @@ working_app = '''<!DOCTYPE html>
                 <div class="section-title" style="margin-bottom: 16px;">🎁 Выгодные переходы</div>
                 <div class="ref-card">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #fc3f1d, #ff6b35); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🎵</div>
-                        <div style="font-size: 15px; font-weight: 700;">Яндекс Музыка</div>
+                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #fc3f1d, #ff6b35); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🔴</div>
+                        <div style="font-size: 15px; font-weight: 700;">Яндекс Плюс — экосистема всего</div>
                     </div>
-                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">3 месяца бесплатно по моей ссылке. Аналог Spotify, но дешевле.</div>
-                    <button class="ref-btn" onclick="openLink('https://music.yandex.ru/promo')">Перейти и получить бонус</button>
-                    <div class="ref-reward">💎 3 мес бесплатно + я получу бонус</div>
+                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">Кинопоиск, Я.Музыка, кэшбэк 5-10%, доставка. Семейный план 449₽ на 4 человек.</div>
+                    <button class="ref-btn" onclick="openLink('https://plus.yandex.ru')">Перейти и получить бонус</button>
+                    <div class="ref-reward">💎 До 60 дней бесплатно + я получу бонус</div>
                 </div>
                 <div class="ref-card">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                         <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #e50914, #b20710); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🎬</div>
-                        <div style="font-size: 15px; font-weight: 700;">IVI вместо Netflix</div>
+                        <div style="font-size: 15px; font-weight: 700;">IVI — фильмы и сериалы</div>
                     </div>
-                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">Российские сериалы + голливудское кино. В 2 раза дешевле.</div>
+                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">Российские сериалы + голливудское кино. Амедиатека в премиуме. Дешевле Netflix.</div>
                     <button class="ref-btn" onclick="openLink('https://www.ivi.ru')">Перейти и получить бонус</button>
                     <div class="ref-reward">💎 30 дней бесплатно + я получу бонус</div>
                 </div>
                 <div class="ref-card">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #ff6b00, #ff9500); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📦</div>
-                        <div style="font-size: 15px; font-weight: 700;">Самокат</div>
+                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #00d4ff, #0099cc); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📦</div>
+                        <div style="font-size: 15px; font-weight: 700;">Ozon Premium — доставка</div>
                     </div>
-                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">Быстрая доставка продуктов. 500₽ на первый заказ.</div>
+                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">Бесплатная доставка от 500₽, закрытые цены, кэшбэк до 25%. Окупается с 3 заказов.</div>
+                    <button class="ref-btn" onclick="openLink('https://www.ozon.ru')">Перейти и получить бонус</button>
+                    <div class="ref-reward">💎 Пробный период + я получу бонус</div>
+                </div>
+                <div class="ref-card">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #ff6b00, #ff9500); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🥑</div>
+                        <div style="font-size: 15px; font-weight: 700;">Самокат — доставка продуктов</div>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">15 минут доставка. Входит в СберПрайм. 500₽ на первый заказ.</div>
                     <button class="ref-btn" onclick="openLink('https://samokat.ru')">Перейти и получить бонус</button>
                     <div class="ref-reward">💎 500₽ на заказ + я получу бонус</div>
                 </div>
@@ -255,23 +270,32 @@ working_app = '''<!DOCTYPE html>
         </div>
     </div>
     
-    <!-- МОДАЛКА ДОБАВЛЕНИЯ -->
+    <!-- МОДАЛКА: Выбор из готовых -->
+    <div class="modal-overlay" id="presetModal">
+        <div class="modal-sheet">
+            <div class="modal-title">📱 Выбери подписку</div>
+            <div class="preset-grid" id="presetGrid"></div>
+            <button class="btn-ghost" onclick="closePreset()">Отмена</button>
+        </div>
+    </div>
+    
+    <!-- МОДАЛКА: Ручной ввод -->
     <div class="modal-overlay" id="addModal">
         <div class="modal-sheet">
             <div class="modal-title">➕ Добавить подписку</div>
-            <input class="input-field" id="subName" type="text" placeholder="Название (Spotify, Netflix...)">
-            <input class="input-field" id="subPrice" type="number" placeholder="Сумма в месяц (199)">
+            <input class="input-field" id="subName" type="text" placeholder="Название">
+            <input class="input-field" id="subPrice" type="number" placeholder="Цена в месяц (₽)">
             <input class="input-field" id="subDay" type="number" placeholder="День списания (1-31)" min="1" max="31">
             <div style="font-size: 13px; color: var(--text2); margin-bottom: 8px;">Иконка:</div>
             <div class="category-select">
-                <span class="cat-tag active" onclick="selectIcon(this, '🎵')">🎵 Музыка</span>
-                <span class="cat-tag" onclick="selectIcon(this, '🎬')">🎬 Видео</span>
-                <span class="cat-tag" onclick="selectIcon(this, '📱')">📱 Приложение</span>
-                <span class="cat-tag" onclick="selectIcon(this, '🎮')">🎮 Игры</span>
-                <span class="cat-tag" onclick="selectIcon(this, '📦')">📦 Доставка</span>
-                <span class="cat-tag" onclick="selectIcon(this, '🚕')">🚕 Такси</span>
-                <span class="cat-tag" onclick="selectIcon(this, '📚')">📚 Обучение</span>
-                <span class="cat-tag" onclick="selectIcon(this, '💪')">💪 Спорт</span>
+                <span class="cat-tag active" onclick="selectIcon(this, '🔴')">🔴</span>
+                <span class="cat-tag" onclick="selectIcon(this, '🎵')">🎵</span>
+                <span class="cat-tag" onclick="selectIcon(this, '🎬')">🎬</span>
+                <span class="cat-tag" onclick="selectIcon(this, '📦')">📦</span>
+                <span class="cat-tag" onclick="selectIcon(this, '🎮')">🎮</span>
+                <span class="cat-tag" onclick="selectIcon(this, '📚')">📚</span>
+                <span class="cat-tag" onclick="selectIcon(this, '🏋️')">🏋️</span>
+                <span class="cat-tag" onclick="selectIcon(this, '🚕')">🚕</span>
             </div>
             <button class="btn-main" onclick="addSubscription()">Добавить</button>
             <button class="btn-ghost" onclick="closeAdd()">Отмена</button>
@@ -299,13 +323,53 @@ working_app = '''<!DOCTYPE html>
     </div>
 
     <script>
-        // === ДАННЫЕ ===
+        // === КАТАЛОГ ПОДПИСОК (популярные в РФ) ===
+        const PRESETS = [
+            { name: 'Яндекс Плюс', price: 299, icon: '🔴', desc: 'Кинопоиск, музыка, доставка', color: '#fc3f1d' },
+            { name: 'Яндекс Музыка', price: 169, icon: '🎵', desc: 'Музыка без рекламы', color: '#fc3f1d' },
+            { name: 'Кинопоиск', price: 0, icon: '🎬', desc: 'Входит в Яндекс Плюс', color: '#ff6b35' },
+            { name: 'IVI', price: 399, icon: '🎬', desc: 'Фильмы и сериалы', color: '#e50914' },
+            { name: 'Okko', price: 399, icon: '🎬', desc: 'Фильмы, сериалы, спорт', color: '#00d4ff' },
+            { name: 'Wink', price: 349, icon: '📺', desc: 'Фильмы, ТВ-каналы', color: '#00d4ff' },
+            { name: 'Premier', price: 599, icon: '🎬', desc: 'Оригинальные сериалы', color: '#ff3366' },
+            { name: 'Start', price: 599, icon: '🎬', desc: 'Эксклюзивные новинки', color: '#ff6b35' },
+            { name: 'КИОН', price: 299, icon: '📺', desc: 'Фильмы, сериалы, ТВ', color: '#667eea' },
+            { name: 'VK Музыка', price: 169, icon: '🎵', desc: 'Музыка ВКонтакте', color: '#07f' },
+            { name: 'СберЗвук', price: 199, icon: '🎵', desc: '50+ млн треков', color: '#21a038' },
+            { name: 'Apple Music', price: 169, icon: '🎵', desc: 'Музыка Apple', color: '#fa57c1' },
+            { name: 'Spotify', price: 199, icon: '🎵', desc: 'Мировой каталог', color: '#1db954' },
+            { name: 'YouTube Premium', price: 199, icon: '▶️', desc: 'Без рекламы, фоновый режим', color: '#ff0000' },
+            { name: 'СберПрайм', price: 199, icon: '💚', desc: 'Окко, СберЗвук, Самокат', color: '#21a038' },
+            { name: 'Ozon Premium', price: 299, icon: '📦', desc: 'Доставка, кэшбэк 25%', color: '#005bff' },
+            { name: 'Wildberries', price: 0, icon: '🛍️', desc: 'WB Кошелёк (бесплатно)', color: '#9b59b6' },
+            { name: 'Самокат', price: 0, icon: '🥑', desc: 'Доставка продуктов', color: '#ff6b00' },
+            { name: 'Яндекс Еда', price: 0, icon: '🍔', desc: 'Доставка еды', color: '#fc3f1d' },
+            { name: 'Яндекс Go', price: 0, icon: '🚕', desc: 'Такси и доставка', color: '#fc3f1d' },
+            { name: 'VK Play Cloud', price: 299, icon: '🎮', desc: 'Облачный гейминг', color: '#07f' },
+            { name: 'GeForce NOW', price: 499, icon: '🎮', desc: 'Игры в облаке', color: '#76b900' },
+            { name: 'Steam', price: 0, icon: '🎮', desc: 'Игровая платформа', color: '#1b2838' },
+            { name: 'Литрес', price: 549, icon: '📚', desc: 'Книги и аудиокниги', color: '#3498db' },
+            { name: 'Bookmate', price: 299, icon: '📚', desc: 'Электронные книги', color: '#f39c12' },
+            { name: 'Storytel', price: 449, icon: '📚', desc: 'Аудиокниги', color: '#e74c3c' },
+            { name: 'Яндекс Диск', price: 199, icon: '💾', desc: 'Облачное хранилище', color: '#fc3f1d' },
+            { name: 'Google One', price: 129, icon: '💾', desc: 'Google Drive', color: '#4285f4' },
+            { name: 'iCloud+', price: 59, icon: '☁️', desc: 'Apple облако', color: '#007aff' },
+            { name: 'Telegram Premium', price: 199, icon: '✈️', desc: 'Расширенные функции', color: '#0088cc' },
+            { name: 'Tinder Plus', price: 299, icon: '🔥', desc: 'Знакомства', color: '#fd5068' },
+            { name: 'Badoo Premium', price: 399, icon: '💜', desc: 'Знакомства', color: '#783bf9' },
+            { name: 'Headspace', price: 399, icon: '🧘', desc: 'Медитация', color: '#ff8c00' },
+            { name: 'Яндекс Афиша', price: 0, icon: '🎭', desc: 'Билеты на мероприятия', color: '#fc3f1d' },
+            { name: 'FitStars', price: 499, icon: '🏋️', desc: 'Фитнес онлайн', color: '#e74c3c' },
+            { name: 'SberHealth', price: 299, icon: '💊', desc: 'Онлайн-врачи', color: '#21a038' },
+        ];
+        
+        // === ДАННЫЕ ПОЛЬЗОВАТЕЛЯ ===
         let subs = JSON.parse(localStorage.getItem('subs')) || [];
         let goal = JSON.parse(localStorage.getItem('goal')) || { target: 50000, saved: 0, name: 'iPhone 15 Pro' };
         let startDate = localStorage.getItem('startDate') || new Date().toISOString();
-        let selectedIcon = '🎵';
+        let selectedIcon = '🔴';
         
-        // === ИНИЦИАЛИЗАЦИЯ ===
+        // === ИНИЦИАЛИЗАЦИЯ TELEGRAM ===
         let tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
@@ -330,33 +394,29 @@ working_app = '''<!DOCTYPE html>
         }
         
         function updateUI() {
-            // Считаем суммы
             const totalMonth = subs.reduce((s, x) => s + (parseFloat(x.price) || 0), 0);
             const totalYear = totalMonth * 12;
             const count = subs.length;
             
-            // Находим ближайшее списание
             let minDays = 999;
             subs.forEach(s => {
                 const d = daysUntil(parseInt(s.day) || 1);
                 if (d < minDays) minDays = d;
             });
             
-            // Обновляем главную
             document.getElementById('totalYear').textContent = formatMoney(totalYear);
             document.getElementById('totalMonth').textContent = formatMoney(totalMonth) + ' каждый месяц';
             document.getElementById('countSubs').textContent = count;
             document.getElementById('saveAmount').textContent = formatMoney(totalYear * 0.3);
             document.getElementById('nextPayment').textContent = count > 0 ? minDays : '—';
             
-            // Список подписок
             const list = document.getElementById('subsList');
             if (count === 0) {
                 list.innerHTML = '<div class="empty-state"><div class="emoji">📝</div><p>Пока нет подписок. Добавь первую!</p></div>';
             } else {
                 list.innerHTML = subs.map((s, i) => `
                     <div class="sub-card">
-                        <div class="sub-icon" style="background: linear-gradient(135deg, hsl(${i * 60}, 70%, 50%), hsl(${i * 60 + 30}, 70%, 40%)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; width: 52px; height: 52px; flex-shrink: 0;">${s.icon}</div>
+                        <div class="sub-icon" style="background: linear-gradient(135deg, ${s.color || '#667eea'}, ${s.color2 || '#764ba2'}); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; width: 52px; height: 52px; flex-shrink: 0;">${s.icon}</div>
                         <div class="sub-info">
                             <div class="sub-name">${s.name}</div>
                             <div class="sub-meta">Списание ${s.day} числа • через ${daysUntil(s.day)} дней</div>
@@ -370,7 +430,6 @@ working_app = '''<!DOCTYPE html>
                 `).join('');
             }
             
-            // Цель
             const pct = goal.target > 0 ? Math.min((goal.saved / goal.target) * 100, 100) : 0;
             document.getElementById('goalSaved').textContent = formatMoney(goal.saved);
             document.getElementById('goalTarget').textContent = 'из ' + formatMoney(goal.target);
@@ -378,7 +437,6 @@ working_app = '''<!DOCTYPE html>
             document.getElementById('goalNeed').textContent = 'Осталось: ' + formatMoney(goal.target - goal.saved);
             document.getElementById('progCircle').style.strokeDashoffset = 377 - (377 * pct / 100);
             
-            // Профиль
             const days = Math.floor((new Date() - new Date(startDate)) / (1000 * 60 * 60 * 24));
             document.getElementById('profileEarned').textContent = formatMoney(goal.saved);
             document.getElementById('profileCount').textContent = count;
@@ -387,12 +445,54 @@ working_app = '''<!DOCTYPE html>
             saveData();
         }
         
+        function openAdd() {
+            // Показываем готовые подписки
+            const grid = document.getElementById('presetGrid');
+            grid.innerHTML = PRESETS.map((p, idx) => `
+                <div class="preset-item" onclick="selectPreset(${idx})">
+                    <div class="preset-icon">${p.icon}</div>
+                    <div class="preset-name">${p.name}</div>
+                    <div class="preset-price">${p.price > 0 ? p.price + ' ₽/мес' : 'Бесплатно'}</div>
+                    <div class="preset-desc">${p.desc}</div>
+                </div>
+            `).join('');
+            document.getElementById('presetModal').classList.add('active');
+        }
+        
+        function selectPreset(idx) {
+            const p = PRESETS[idx];
+            document.getElementById('presetModal').classList.remove('active');
+            
+            if (p.price === 0) {
+                // Бесплатная подписка — добавляем сразу
+                subs.push({ name: p.name, price: 0, day: 1, icon: p.icon, color: p.color });
+                saveData();
+                updateUI();
+                tg.showAlert('✅ ' + p.name + ' добавлена!');
+                return;
+            }
+            
+            // Платная — открываем детали
+            document.getElementById('subName').value = p.name;
+            document.getElementById('subPrice').value = p.price;
+            selectedIcon = p.icon;
+            document.querySelectorAll('.cat-tag').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.cat-tag').forEach(t => {
+                if (t.textContent.trim() === p.icon) t.classList.add('active');
+            });
+            document.getElementById('addModal').classList.add('active');
+        }
+        
+        function closePreset() {
+            document.getElementById('presetModal').classList.remove('active');
+        }
+        
         function addSubscription() {
             const name = document.getElementById('subName').value.trim();
             const price = parseFloat(document.getElementById('subPrice').value);
             const day = parseInt(document.getElementById('subDay').value);
             
-            if (!name || !price || !day) {
+            if (!name || isNaN(price) || isNaN(day)) {
                 tg.showAlert('Заполни все поля!');
                 return;
             }
@@ -401,17 +501,23 @@ working_app = '''<!DOCTYPE html>
                 return;
             }
             
-            subs.push({ name, price, day, icon: selectedIcon });
+            const preset = PRESETS.find(p => p.name === name);
+            subs.push({ 
+                name, 
+                price, 
+                day, 
+                icon: selectedIcon,
+                color: preset ? preset.color : '#667eea'
+            });
             saveData();
             updateUI();
             closeAdd();
             
-            // Очищаем поля
             document.getElementById('subName').value = '';
             document.getElementById('subPrice').value = '';
             document.getElementById('subDay').value = '';
             
-            tg.showAlert('✅ Подписка добавлена!');
+            tg.showAlert('✅ ' + name + ' добавлена!');
         }
         
         function deleteSub(index) {
@@ -429,8 +535,7 @@ working_app = '''<!DOCTYPE html>
         }
         
         function addToGoal() {
-            const amount = 1000;
-            goal.saved += amount;
+            goal.saved += 1000;
             saveData();
             updateUI();
             tg.showAlert('💰 +1000₽ отложено на цель!');
@@ -447,10 +552,6 @@ working_app = '''<!DOCTYPE html>
             document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
             if (el) el.classList.add('active');
-        }
-        
-        function openAdd() {
-            document.getElementById('addModal').classList.add('active');
         }
         
         function closeAdd() {
@@ -508,17 +609,14 @@ working_app = '''<!DOCTYPE html>
 </body>
 </html>'''
 
-with open('/mnt/agents/output/subscription_killer_working.html', 'w', encoding='utf-8') as f:
-    f.write(working_app)
+with open('/mnt/agents/output/subscription_killer_fixed.html', 'w', encoding='utf-8') as f:
+    f.write(fixed_app)
 
-print("✅ РАБОЧИЙ Подписко-убийца создан!")
-print(f"✅ {len(working_app.splitlines())} строк")
-print(f"✅ Размер: {len(working_app)} символов")
-print("\n🚀 Что работает:")
-print("  • Добавление подписок (название, цена, день, иконка)")
-print("  • Автоматический подсчёт сумм")
-print("  • Удаление подписок")
-print("  • Сохранение в localStorage (не теряется при закрытии)")
-print("  • Цели накопления")
-print("  • Экспорт/импорт данных")
-print("  • Реферальные ссылки")
+print("✅ ИСПРАВЛЕННЫЙ Подписко-убийца создан!")
+print(f"✅ {len(fixed_app.splitlines())} строк")
+print(f"✅ Размер: {len(fixed_app)} символов")
+print("\n🚀 Исправления:")
+print("  • Убран Python-код из HTML")
+print("  • 36 готовых подписок с иконками и описаниями")
+print("  • Выбор из каталога → автозаполнение данных")
+print("  • Каждая подписка с цветом и описанием")
